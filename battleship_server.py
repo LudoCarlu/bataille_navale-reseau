@@ -13,7 +13,15 @@ import time
 
 hote = ''
 port = 2018
-
+        ## message_description[messageclient] ->
+        # message_description[messageclient][0] -> Réponse du serveur
+        # message_description[messageclient][1] -> Fonction a appeler
+message_description_server = { 
+        'logina': ('Mot de passe :','login()'),
+        'loginj': ('Mot de passe','login()'),
+        'supprimera': ('Quel client à supprimer ?','supprimerclient'),
+        'jouerj': ('?','lancer_tir'),
+        }
 
 class ClientThread(threading.Thread):
 
@@ -24,7 +32,8 @@ class ClientThread(threading.Thread):
         self.port = port
         self.clientsocket = clientsocket
         print("[+] Nouveau thread pour %s %s" % (self.ip, self.port, ))
-        
+
+
     def get_clientsocket(self):
         return self.clientsocket
     """
@@ -82,7 +91,7 @@ while serveur_actif:
     clients_a_lire = []
     try:
         """
-        rlist: wait until ready for reading
+        rlist: wait until ready for readingvc
         wlist: wait until ready for writing
         xlist: wait for an “exceptional condition”
         """
@@ -96,7 +105,6 @@ while serveur_actif:
             # Client est de type socket
             msg_recu = client.recv(1024)
             # Peut planter si le message contient des caractères spéciaux
-            time.sleep(20)
             msg_recu = msg_recu.decode()
             print("Reçu {}".format(msg_recu))
             client.send(b"5 / 5")
