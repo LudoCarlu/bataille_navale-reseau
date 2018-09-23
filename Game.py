@@ -124,7 +124,7 @@ class Joueur:
         
       
 
-class Adminstrateur:
+class Administrateur:
     
     def __init__(self, name):
         

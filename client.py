@@ -1,72 +1,114 @@
 import socket
-from Game import *
+import game
 
 hote = 'localhost'
 port = 2018
 
+
+
+def envoyer_appel_fonction(code, fonction_avec_args):
+    to_send = code + ";" + str(fonction_avec_args)
+    connexion_avec_serveur.send(to_send.encode())
+
+def decode_retour_serveur(message_bytes):
+    message_str = message_bytes.decode()
+    retour = message_str.split(";")
+    return retour
+   
+def menu_admin():
+    commande = 0
+    while commande not in(1,2,3):
+        print("Menu administrateur")
+        print("1: Initialiser le plateau")
+        #print("2: Placer des bateaux")
+        print("3: Accepter les joueurs")
+        commande = int(input("Que souhaitez vous faire ? "))
+    return commande
+
+
+## DEBUT SEQUENCE CLIENT ##
 connexion_avec_serveur = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 connexion_avec_serveur.connect((hote, port))
 print("Connexion établie avec le serveur sur le port {}".format(port))
 
-
-msg_a_envoyer = b""
 """
-while msg_a_envoyer != b"fin":
-    print('Login :')
-    msg_a_envoyer = input("> ")
-    if msg_a_envoyer == 'Admin':
-        Adminstrateur('toto')
-        msg_a_envoyer='logina_'+msg_a_envoyer
-    else:
-        Joueur('toto')
-        msg_a_envoyer='loginj_'+msg_a_envoyer
-    msg_a_envoyer = msg_a_envoyer.encode()
-    connexion_avec_serveur.send(msg_a_envoyer)
-    print('Mdp :')
-    msg_a_envoyer = input("> ")
-    msg_a_envoyer = msg_a_envoyer.encode()
-    connexion_avec_serveur.send(msg_a_envoyer)
-    # Peut planter si vous tapez des caractères spéciaux
-    msg_a_envoyer = input("> ")
-    msg_a_envoyer = msg_a_envoyer.encode()
-    # On envoie le message
-    connexion_avec_serveur.send(msg_a_envoyer)
-    msg_recu = connexion_avec_serveur.recv(1024)
-    print(msg_recu.decode()) # Là encore, peut planter s'il y a des accents
+Envoie de donnée code; data
+Retour de donnée code; reponse
 """
 
-"""
-Dans les envoi de donner {code, data}
-
-login_admin : (login, mdp)
-login_joueur : (login, mdp)
-
-"""
-a_envoyer = ""
 data = ""
 code = ""
+code_retour = ""
+role = ""
+login = ""
 
-print("Authentifiez vous :")
-print("Login :", end =" ")
-login = input()
-print("Password :", end=" ")
-mdp = input()
-
-if login  == 'admin':
-    code = "login_admin"
-    data = (login,mdp)
+#Authentification
+compteur_tentative = 0
+while (
+       (code_retour != "authentification_reussie" 
+       and code_retour != "authentification_admin"
+       and code_retour != "admin_absent"
+       and code_retour != "admin_deja_present"
+       ) 
+       and compteur_tentative <3
+       ):
     
-else:
-    code = "login_joueur"
-    data = (login, mdp)
+    print("Authentifiez vous :")
+    login = input("Login :")
+    mdp = input("Password :")
+    
+    code = "authentification"
+    data = "authentification" + str((login,mdp))
+    
+    envoyer_appel_fonction(code, data)
+    reponse = decode_retour_serveur(connexion_avec_serveur.recv(1024))
+    code_retour = reponse[0] 
+    message = reponse[1]
+    
+    if code_retour == "authentification_reussie" or code_retour == "authentification_admin":
+        role = reponse[2]
+        print("Role:",role)
+        
+    print(message)
+    compteur_tentative += 1
+    print()
 
-a_envoyer = code + ';' + str(data)
-#Envoyer code 
-connexion_avec_serveur.send(a_envoyer.encode())
+if code_retour == "admin_absent" or code_retour == "admin_deja_present":
+    envoyer_appel_fonction("deconnexion","Deconnexion")
+    print("Fermeture de la connexion")
+    connexion_avec_serveur.close()
 
-reponse_login = connexion_avec_serveur.recv(1024)
-print(repr(reponse_login))
+if compteur_tentative == 3:
+    print("3 tentatives échouées")
+    envoyer_appel_fonction("deconnexion","Deconnexion")
+    print("Fermeture de la connexion")
+    connexion_avec_serveur.close()
+    
+print("Suite du scénario")
+
+if role == "admin":
+    adm = game.Administrateur(login)
+    commande = 0
+    taille_plateau = 0    
+    plateau = None
+    commande = menu_admin()
+    
+    if commande == 1:
+        while taille_plateau < 10:
+            taille_plateau = int(input("Quelle est la taille de votre plateau? Minimum : 10 \n"))
+            print()
+        
+        code = "initialisation"
+        data = "game.Plateau" + "(" + str(taille_plateau) + ")"
+        envoyer_appel_fonction(code, data)
+        reponse = decode_retour_serveur(connexion_avec_serveur.recv(1024))
+        code_retour = reponse[0]
+        message = reponse[1]
+        print("code:",code_retour, "message:", message)
+        print(message)
     
     
-print("Fermeture de la connexion")
-connexion_avec_serveur.close()
+
+
+
+
