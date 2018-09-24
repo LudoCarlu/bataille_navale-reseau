@@ -1,9 +1,8 @@
 import socket
-import game
+import Game as game
 
 hote = 'localhost'
-port = 2018
-
+port = 2011
 
 
 def envoyer_appel_fonction(code, fonction_avec_args):
@@ -11,7 +10,7 @@ def envoyer_appel_fonction(code, fonction_avec_args):
     connexion_avec_serveur.send(to_send.encode())
 
 def decode_retour_serveur(message_bytes):
-    message_str = message_bytes.decode()
+    message_str = message_bytes.decode("utf-8")
     retour = message_str.split(";")
     return retour
    
@@ -38,7 +37,8 @@ def demande_affichage_plateau():
     envoyer_appel_fonction("demande_affichage_plateau","")
     plateau = decode_retour_serveur(connexion_avec_serveur.recv(1024))
     
-    return plateau
+    return "".join(plateau)
+
 
 ## DEBUT SEQUENCE CLIENT ##
 connexion_avec_serveur = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -76,14 +76,19 @@ while (
     
     envoyer_appel_fonction(code, data)
     reponse = decode_retour_serveur(connexion_avec_serveur.recv(1024))
-    code_retour = reponse[0] 
-    message = reponse[1]
+    code_retour = reponse[0]
+    print(code_retour)
+    try:
+        message = reponse[1]
+        print(message)
+    except Exception  as e:
+        print(e)
     
     if code_retour == "authentification_reussie" or code_retour == "authentification_admin":
         role = reponse[2]
         print("Role:",role)
         
-    print(message)
+
     compteur_tentative += 1
     print()
 
@@ -99,67 +104,98 @@ if compteur_tentative == 3:
     connexion_avec_serveur.close()
     
 print("Suite du scénario")
+try:
 
-if role == "admin":
-    
-    ## PART 1 INITIALISATION DE LA PARTIE
-    
-    commande = 0
-    taille_plateau = 0
-    
-    #Création du plateau
-    while taille_plateau < 10:
-        taille_plateau = int(input("Quelle est la taille de votre plateau? Minimum : 10 \n"))
+    if role == "admin":
+
+        ## PART 1 INITIALISATION DE LA PARTIE
+
+        commande = 0
+        taille_plateau = 0
+
+        #Création du plateau
+        while taille_plateau < 10:
+            taille_plateau = int(input("Quelle est la taille de votre plateau? Minimum : 10 \n"))
+            print()
+
+        reponse = initialisation_du_plateau(taille_plateau)
+        code_retour = reponse[0]
+        message = reponse[1]
+        print("code:",code_retour, "message:", message)
+        print(message)
         print()
-        
-    reponse = initialisation_du_plateau(taille_plateau)
-    code_retour = reponse[0]
-    message = reponse[1]
-    print("code:",code_retour, "message:", message)
-    print(message)
-    print()
-    
-    print("=== MENU CREATION DE BATEAU ===")
-    print(demande_affichage_plateau())
-    print()    
-    
-    """
-    #bateau : type_bateau ,orientation, head_coord
-    #placer_bateau(self, classplateau,boat)
-    #Création des bateaux
-    ajouter_bateau = True
-    nb_de_bateau_max = 3
-    
-    while i < nb_de_bateau_max:
 
-        print("Quel type de bateau voulez vous placer ?")
-        type_bateau = int(input("1 : Petit\n2 : Moyen\n3 : Grand"))
-        orientation = int(input("1 : Horizontale\n2 :Verticale"))
-        x = input("Coordonnée X de la tête: ")
-        y = input("Coordonnée Y de la tête: ")
-        
-        if type_bateau == 1:
-            type_bateau = "petit"
-        elif type_tableau == 2:
-            type_bateau = "moyen"
-        elif type_bateau == 3:
-            type_bateau = "grand"
-        
-        if orientation == 1:
-            orientation = "horizontale"
-        elif orientation == 2:
-            orientation = "verticale"
-               
-        code = "creation_bateau"
-        data = "adm.placer_bateau(plateau,Bateau("+type_bateau+","+orientation+",("+x+","+y+")"
-        
+        print("=== MENU CREATION DE BATEAU ===")
+        print("".join(demande_affichage_plateau()))
         print()
-    """
-    ## PART 2 GESTION DES CONNEXIONS    
 
-if role == "joueur":
-    print("Wait for entrance")
-    retour = decode_retour_serveur(message_bytes)
+
+        #bateau : type_bateau ,orientation, head_coord
+        #placer_bateau(self, classplateau,boat)
+        #Création des bateaux
+        ajouter_bateau = True
+        nb_de_bateau_max = 3
+        i=0
+        while i < nb_de_bateau_max:
+
+            print("Quel type de bateau voulez vous placer ?")
+            type_bateau = int(input("1 : Petit\n2 : Moyen\n3 : Grand\n"))
+            orientation = int(input("1 : Horizontale\n2 :Verticale\n"))
+            x = input("Coordonnée X de la tête: ")
+            y = input("Coordonnée Y de la tête: ")
+
+            if type_bateau == 1:
+                type_bateau = "petit"
+            elif type_bateau == 2:
+                type_bateau = "moyen"
+            elif type_bateau == 3:
+                type_bateau = "grand"
+
+            if orientation == 1:
+                orientation = "horizontale"
+            elif orientation == 2:
+                orientation = "verticale"
+
+            try:
+                game.Bateau(type_bateau,orientation,(x,y))
+                code = "creation_bateau"
+                data = "adm.placer_bateau(plateau,Bateau('" + type_bateau + "','" + orientation + "',(" + x + "," + y + ")))"
+                i = i + 1
+                print()
+                envoyer_appel_fonction(code, data)
+                print()
+                reponse = decode_retour_serveur(connexion_avec_serveur.recv(1024))
+                code_retour = reponse[0]
+                print(code_retour)
+                print(message)
+            except:
+                print('Erreur lors de la création de vos paramètres bateau')
+
+        reponse = decode_retour_serveur(connexion_avec_serveur.recv(1024))
+        code_retour = reponse[0]
+        print(code_retour)
+        reponse = decode_retour_serveur(connexion_avec_serveur.recv(1024))
+        code_retour = reponse[0]
+        print(code_retour)
+        reponse = decode_retour_serveur(connexion_avec_serveur.recv(1024))
+        code_retour = reponse[0]
+        print(code_retour)
+
+
+        ## PART 2 GESTION DES CONNEXIONS
+
+    if role == "joueur":
+        print("Wait for entrance")
+        envoyer_appel_fonction("demande_autorisation", login)
+
+
+
+
+
+
+except Exception as e:
+    print(e)
+    connexion_avec_serveur.close()
 
 
 
