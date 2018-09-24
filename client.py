@@ -17,14 +17,28 @@ def decode_retour_serveur(message_bytes):
    
 def menu_admin():
     commande = 0
-    while commande not in(1,2,3):
+    while commande not in range(1,5):
         print("Menu administrateur")
         print("1: Initialiser le plateau")
-        #print("2: Placer des bateaux")
-        print("3: Accepter les joueurs")
+        print("2: Placer des bateaux")
+        print("3: Créer un joueur")
+        print("4: Accepter les joueurs")
         commande = int(input("Que souhaitez vous faire ? "))
     return commande
 
+def initialisation_du_plateau(taille):
+    code = "initialisation"
+    data = "game.Plateau" + "(" + str(taille_plateau) + ")"
+    envoyer_appel_fonction(code, data)
+    reponse = decode_retour_serveur(connexion_avec_serveur.recv(1024))
+    
+    return reponse;
+
+def demande_affichage_plateau():
+    envoyer_appel_fonction("demande_affichage_plateau","")
+    plateau = decode_retour_serveur(connexion_avec_serveur.recv(1024))
+    
+    return plateau
 
 ## DEBUT SEQUENCE CLIENT ##
 connexion_avec_serveur = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -87,27 +101,65 @@ if compteur_tentative == 3:
 print("Suite du scénario")
 
 if role == "admin":
-    adm = game.Administrateur(login)
+    
+    ## PART 1 INITIALISATION DE LA PARTIE
+    
     commande = 0
-    taille_plateau = 0    
-    plateau = None
-    commande = menu_admin()
+    taille_plateau = 0
     
-    if commande == 1:
-        while taille_plateau < 10:
-            taille_plateau = int(input("Quelle est la taille de votre plateau? Minimum : 10 \n"))
-            print()
+    #Création du plateau
+    while taille_plateau < 10:
+        taille_plateau = int(input("Quelle est la taille de votre plateau? Minimum : 10 \n"))
+        print()
         
-        code = "initialisation"
-        data = "game.Plateau" + "(" + str(taille_plateau) + ")"
-        envoyer_appel_fonction(code, data)
-        reponse = decode_retour_serveur(connexion_avec_serveur.recv(1024))
-        code_retour = reponse[0]
-        message = reponse[1]
-        print("code:",code_retour, "message:", message)
-        print(message)
+    reponse = initialisation_du_plateau(taille_plateau)
+    code_retour = reponse[0]
+    message = reponse[1]
+    print("code:",code_retour, "message:", message)
+    print(message)
+    print()
     
+    print("=== MENU CREATION DE BATEAU ===")
+    print(demande_affichage_plateau())
+    print()    
     
+    """
+    #bateau : type_bateau ,orientation, head_coord
+    #placer_bateau(self, classplateau,boat)
+    #Création des bateaux
+    ajouter_bateau = True
+    nb_de_bateau_max = 3
+    
+    while i < nb_de_bateau_max:
+
+        print("Quel type de bateau voulez vous placer ?")
+        type_bateau = int(input("1 : Petit\n2 : Moyen\n3 : Grand"))
+        orientation = int(input("1 : Horizontale\n2 :Verticale"))
+        x = input("Coordonnée X de la tête: ")
+        y = input("Coordonnée Y de la tête: ")
+        
+        if type_bateau == 1:
+            type_bateau = "petit"
+        elif type_tableau == 2:
+            type_bateau = "moyen"
+        elif type_bateau == 3:
+            type_bateau = "grand"
+        
+        if orientation == 1:
+            orientation = "horizontale"
+        elif orientation == 2:
+            orientation = "verticale"
+               
+        code = "creation_bateau"
+        data = "adm.placer_bateau(plateau,Bateau("+type_bateau+","+orientation+",("+x+","+y+")"
+        
+        print()
+    """
+    ## PART 2 GESTION DES CONNEXIONS    
+
+if role == "joueur":
+    print("Wait for entrance")
+    retour = decode_retour_serveur(message_bytes)
 
 
 

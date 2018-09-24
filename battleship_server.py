@@ -8,17 +8,23 @@ Created on Tue Sep 11 11:38:43 2018
 
 import socket
 import select
-import time
-import sys
 import queue
 import numpy as np, pandas as pd
 import game
 
 hote = ''
 port = 2018
-        ## message_description[messageclient] ->
-        # message_description[messageclient][0] -> Réponse du serveur
-        # message_description[messageclient][1] -> Fonction a appeler
+
+users = pd.read_csv("users.csv")
+
+serveur_actif = True
+admin_present = False
+
+#Objets du jeu
+adm = None
+plateau = None
+
+
 code_transcription = {
         "login_admin" : ["Authentification successfull", "Authentification failed"],
         "login" : ["Authentification successfull", "Authentification failed"],
@@ -36,11 +42,6 @@ code_retour_au_client = {
         "erreur_authentification" : ["erreur_authentification;Erreur : Login incorrect", "erreur_authentification;Erreur : Mot de passe incorrect"],
         "initialisation" : "initialisation;Plateau initialisé"
         }
-
-users = pd.read_csv("users.csv")
-plateau = None
-serveur_actif = True
-admin_present = False
 
 ## Fonctions
 
@@ -123,6 +124,7 @@ while inputs:
                         admin_present = True
                         connexion_admin = connexion
                         print("ADMIN : ", adresse_du_client[0],":",adresse_du_client[1])
+                        adm = game.Administrateur(retour.split(";")[2])
                     
                     queue_des_messages[connexion].put(retour.encode())
                 
@@ -130,9 +132,17 @@ while inputs:
                     plateau = eval(message[1]) #Initialisation du plateau
                     print(plateau)
                     queue_des_messages[connexion].put(code_retour_au_client["initialisation"].encode())
-               
-                if message[0] == "tir":
-                    print("tir")
+                    
+                if message[0] == "demande_affichage_plateau":
+                    retour = ""
+                    if plateau is not None:
+                        retour = plateau.afficher_plateau()
+                    
+                    queue_des_messages[connexion].put(retour.encode())
+                    
+                if message[0] == "creation_bateau":
+                    print()
+                
                 
                 if message[0] == "deconnexion":
                     

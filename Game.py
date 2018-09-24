@@ -27,6 +27,18 @@ class Plateau:
                 print(self.plateau[i][j], end=' ')
             print()
     
+    def afficher_plateau(self):
+        plateau = ""
+        for i in range (0,self.size):
+            for j in range (0, self.size):
+                plateau = plateau + self.plateau[i][j] + ' '
+            plateau = plateau + '\n'
+        
+        return plateau
+    
+    def get_plateau(self):
+        return plateau
+    
     def display_bateau_touche(self):
         
         for i in range (0,self.size):
@@ -80,10 +92,12 @@ class Bateau:
     '''
     
     def __init__(self,type_bateau ,orientation, head_coord):
-        if type_bateau=='grand':
-            self.size=8
-        else:
-            self.size=4
+        if type_bateau == 'grand':
+            self.size = 6
+        elif type_bateau == 'moyen':
+            self.size = 4
+        elif type_bateau == 'petit':
+            self.size = 2
         self.etat = 0
         self.nb_touche = 0
         self.orientation = orientation
@@ -144,9 +158,9 @@ class Administrateur:
                     raise Exception(" Placement impossible ")
             ## Placement
             for i in range(taille):
-                if orientation == 'horizontal':
+                if orientation == 'horizontale':
                     plateau[coordy][coordx+i] = '1'
-                elif orientation == 'vertical':
+                elif orientation == 'verticale':
                      plateau[coordy+i][coordx] = '1'   
             classplateau.list_bateau.append(boat)
             return True
