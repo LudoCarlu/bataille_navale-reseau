@@ -1,5 +1,6 @@
 import socket
-import Game as game
+import game as game
+import time
 
 hote = 'localhost'
 port = 2011
@@ -87,7 +88,6 @@ while (
     if code_retour == "authentification_reussie" or code_retour == "authentification_admin":
         role = reponse[2]
         print("Role:",role)
-        
 
     compteur_tentative += 1
     print()
@@ -134,7 +134,7 @@ try:
         #placer_bateau(self, classplateau,boat)
         #Création des bateaux
         ajouter_bateau = True
-        nb_de_bateau_max = 3
+        nb_de_bateau_max = 0
         i=0
         while i < nb_de_bateau_max:
 
@@ -171,6 +171,7 @@ try:
             except:
                 print('Erreur lors de la création de vos paramètres bateau')
 
+        """
         reponse = decode_retour_serveur(connexion_avec_serveur.recv(1024))
         code_retour = reponse[0]
         print(code_retour)
@@ -180,13 +181,49 @@ try:
         reponse = decode_retour_serveur(connexion_avec_serveur.recv(1024))
         code_retour = reponse[0]
         print(code_retour)
-
+        """
 
         ## PART 2 GESTION DES CONNEXIONS
 
+        nb_de_joueur = int(input("Combien de joueur voulez vous ? "))
+        envoyer_appel_fonction("nb_de_joueur",str(nb_de_joueur))
+        reponse = decode_retour_serveur(connexion_avec_serveur.recv(1024))
+        code_retour = reponse[0]
+        print(code_retour)
+
+        stop = False
+        i = 0
+        while i < nb_de_joueur and stop is False:
+            envoyer_appel_fonction("liste_joueurs_en_attente", "")
+            reponse = decode_retour_serveur(connexion_avec_serveur.recv(1024))
+            code_retour = reponse[0]
+            print(code_retour)
+            time.sleep(1)
+            idx = str(input("Joueur accepté (Index) ? ou Stop\n"))
+            if idx.lower() is "stop":
+                envoyer_appel_fonction("refuser_joueur", "")
+                stop = True
+            else:
+                envoyer_appel_fonction("accepter_joueur", idx)
+            time.sleep(1)
+            i += 1
+
+        envoyer_appel_fonction("refuser_joueur", "") #Vide le tableau des joueurs en attente
+        time.sleep(0.5)
+
     if role == "joueur":
-        print("Wait for entrance")
-        envoyer_appel_fonction("demande_autorisation", login)
+        print("Veuillez attendre la décision de l'administrateur")
+        reponse = decode_retour_serveur(connexion_avec_serveur.recv(1024))
+        print(str(reponse))
+
+        code_retour = reponse[0]
+        message = reponse[1]
+        print(message)
+
+        if(code_retour is "refuser"):
+            envoyer_appel_fonction("deconnexion", "Deconnexion")
+            print("Fermeture de la connexion")
+            connexion_avec_serveur.close()
 
 
 

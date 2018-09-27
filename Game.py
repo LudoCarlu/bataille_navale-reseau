@@ -37,7 +37,7 @@ class Plateau:
         return plateau
     
     def get_plateau(self):
-        return plateau
+        return self.plateau
     
     def display_bateau_touche(self):
         
@@ -116,11 +116,31 @@ class Bateau:
 
 
 class Joueur:
-    
+
+    name = ""
+    connexion = None
+    score = 0
+
     def __init__(self, name):
         
         self.name = name
         self.score = 0
+
+    def __init__(self, name, connexion):
+
+        self.name = name
+        self.score = 0
+        self.connexion = connexion
+
+    def get_connexion(self):
+        return self.connexion
+
+    def get_name(self):
+        return self.name
+
+    def set_connexion(self, c):
+        self.connexion = c
+
     def lancer_tir(self,classplateau,coord):
         plateau = classplateau.plateau
         coordy = coord[0]
@@ -139,10 +159,27 @@ class Joueur:
       
 
 class Administrateur:
+
+    name = ""
+    connexion = None
     
     def __init__(self, name):
         
         self.name = name
+
+    def __init__(self, name, connexion):
+
+        self.name = name
+        self.connexion = connexion
+
+    def get_connexion (self):
+        return self.connexion
+
+    def get_name(self):
+        return self.name
+
+    def set_connexion(self,c):
+        self.connexion = c
 
     def placer_bateau(self, classplateau,boat):
         plateau = classplateau.plateau
@@ -167,7 +204,7 @@ class Administrateur:
         except Exception as e:
             print(str(e)+' Placement impossible')
             return False
-                              
+
 #        
 #pla = Plateau(10)
 #adm = Adminstrateur('non')

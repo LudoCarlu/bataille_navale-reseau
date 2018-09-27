@@ -10,8 +10,7 @@ import socket
 import select
 import queue
 import pandas as pd
-import Game as game
-from Game import *
+import game as game
 
 hote = ''
 global port
@@ -22,56 +21,49 @@ users = pd.read_csv("users.csv")
 serveur_actif = True
 admin_present = False
 
-#Objets du jeu
+# Objets du jeu
 adm = None
 plateau = None
-clients_accepte = []
+joueurs = []
+joueurs_en_attente = []
 
-#
-# code_transcription = {
-#         "login_admin" : ["Authentification successfull", "Authentification failed"],
-#         "login" : ["Authentification successfull", "Authentification failed"],
-#         'logina': ('Mot de passe :','login()'),
-#         'loginj': ('Mot de passe','login()'),
-#         'supprimera': ('Quel client à supprimer ?','supprimerclient'),
-#         'jouerj': ('?','lancer_tir'),
-#         }
 
 code_retour_au_client = {
-        "authentification_reussie" : "authentification_reussie;Authentification reussie ! Bienvenue ",
-        "authentification_admin" : "authentification_admin;Authentification reussie !",
-        "admin_deja_present" : "admin_deja_present;L'administrateur est déjà connecté",
-        "admin_absent" : "erreur_presence_admin;Erreur : Aucun administrateur connecté",
-        "erreur_authentification" : ["erreur_authentification;Erreur : Login incorrect", "erreur_authentification;Erreur : Mot de passe incorrect"],
-        "initialisation" : "initialisation;Plateau initialisé"
-        }
+    "authentification_reussie": "authentification_reussie;Authentification reussie ! Bienvenue ",
+    "authentification_admin": "authentification_admin;Authentification reussie !",
+    "admin_deja_present": "admin_deja_present;L'administrateur est déjà connecté",
+    "admin_absent": "erreur_presence_admin;Erreur : Aucun administrateur connecté",
+    "erreur_authentification": ["erreur_authentification;Erreur : Login incorrect",
+                                "erreur_authentification;Erreur : Mot de passe incorrect"],
+    "initialisation": "initialisation;Plateau initialisé"
+}
+
 
 ## Fonctions
 
 def authentification(login, password):
-
-    if login == "admin" and admin_present == False:
+    if login == "admin" and adm is None:
         for idx, row in users.iterrows():
             if row["login"] == "admin":
                 if row["mdp"] == password:
-                    return code_retour_au_client["authentification_admin"] + ";" + row['role']
-            else :
-                return code_retour_au_client["erreur_authentification"][1]
+                    return code_retour_au_client["authentification_admin"] + ";" + row['role'], login
+            else:
+                return code_retour_au_client["erreur_authentification"][1], "echec"
 
-    elif login == "admin" and admin_present == True:
-        return code_retour_au_client["admin_deja_present"]
-    #Test si admin ou non
+    elif login == "admin" and adm is not None:
+        return code_retour_au_client["admin_deja_present"],"echec"
+    # Test si admin ou non
     else:
-        if admin_present:
-            for idx, row in users.iterrows() :
+        if adm is not None:
+            for idx, row in users.iterrows():
                 if row['login'] == login:
                     if row['mdp'] == password:
-                        return code_retour_au_client["authentification_reussie"] + ";" + row['role']
+                        return code_retour_au_client["authentification_reussie"] + ";" + row['role'], login
                     else:
-                        return code_retour_au_client["erreur_authentification"][1]
-            return code_retour_au_client["erreur_authentification"][0]
+                        return code_retour_au_client["erreur_authentification"][1], "echec"
+            return code_retour_au_client["erreur_authentification"][0], "echec"
         else:
-            return code_retour_au_client["admin_absent"]
+            return code_retour_au_client["admin_absent"], "echec"
 
 
 ## Code serveur
@@ -79,16 +71,14 @@ def authentification(login, password):
 connexion_du_serveur = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 connexion_du_serveur.setblocking(0)
 connexion_du_serveur.bind((hote, port))
-print("socket is binded to %s" %(port))
-connexion_du_serveur.listen(15) #Serveur écoute jusqu'à 3 connexions
+print("socket is binded to %s" % (port))
+connexion_du_serveur.listen(15)  # Serveur écoute jusqu'à 3 connexions
 print("socket is listening")
 
-#inputs = liste de toutes les connexions
+# inputs = liste de toutes les connexions
 inputs = [connexion_du_serveur]
 outputs = []
 queue_des_messages = {}
-connexion_admin  = None
-demande_connexion_admin = []
 
 while inputs:
     # On va vérifier que de nouveaux clients ne demandent pas à se connecter
@@ -99,14 +89,14 @@ while inputs:
 
     for connexion in readable:
 
-        if connexion is connexion_du_serveur: #s est le serveur
+        if connexion is connexion_du_serveur:  # s est le serveur
 
             connexion_avec_client, adresse_du_client = connexion.accept()
             connexion.setblocking(0)
             print("Connexion de %s : %s" % (adresse_du_client[0], adresse_du_client[1]))
 
             inputs.append(connexion_avec_client)
-            #On crée une liste pour les messages de ce client
+            # On crée une liste pour les messages de ce client
             queue_des_messages[connexion_avec_client] = queue.Queue()
 
         else:
@@ -117,23 +107,27 @@ while inputs:
                 message_du_client_str = message_du_client_bytes.decode()
                 message = message_du_client_str.split(";")
 
-                print(adresse_du_client[0],":",adresse_du_client[1])
-                print("Code :",message[0],"\nRequest :", message[1])
+                print(adresse_du_client[0], ":", adresse_du_client[1])
+                print("Code :", message[0], "\nRequest :", message[1],'\n')
+
                 try:
 
                     if message[0] == "authentification":
-                        retour = eval(message[1]) #Appel authentification(login,password)
+                        retour, name = eval(message[1])  # Appel authentification(login,password)
 
-                        if retour.split(";")[0] == "authentification_admin":
+                        if name == "admin":
+                            adm = game.Administrateur(name, connexion)
                             admin_present = True
-                            connexion_admin = connexion
-                            print("ADMIN : ", adresse_du_client[0],":",adresse_du_client[1])
-                            adm = game.Administrateur(retour.split(";")[2])
+                            print("ADMIN : ", adresse_du_client[0], ":", adresse_du_client[1])
+
+                        elif (name != "admin") and (name is not "echec"):
+                            joueurs_en_attente.append(game.Joueur(name,connexion))
+                            print("Joueur wait :", name)
 
                         queue_des_messages[connexion].put(retour.encode())
 
                     if message[0] == "initialisation":
-                        plateau = eval(message[1]) #Initialisation du plateau
+                        plateau = eval(message[1])  # Initialisation du plateau
                         print(plateau)
                         queue_des_messages[connexion].put(code_retour_au_client["initialisation"].encode())
 
@@ -151,23 +145,53 @@ while inputs:
                             retour = plateau.afficher_plateau()
                             print(retour)
                         except Exception as e:
-                            retour='Erreur ! Placement impossible'
+                            retour = 'Erreur ! Placement impossible'
                         queue_des_messages[connexion].put(retour.encode())
                         print()
 
+                    if message[0] == "nb_de_joueur":
+                        retour = "Il y a " + str(len(joueurs_en_attente)) + " qui attendent votre approbation"
+                        queue_des_messages[connexion].put(retour.encode())
+
+                    if message[0] == "liste_joueurs_en_attente":
+                        retour = ""
+                        i = 0
+                        retour = "[ "
+                        for j in joueurs_en_attente:
+                            retour += str(i) + ":" + j.get_name() + " "
+                            i+=1
+                        retour += "]"
+
+                        if len(joueurs_en_attente) == 0:
+                            retour = "[ Aucun joueur en attente ]"
+
+                        queue_des_messages[connexion].put(retour.encode())
+
+                    if message[0] == "refuser_joueur":
+                        if len(joueurs_en_attente) > 0:
+                            for j in joueurs_en_attente:
+                                print("Refus " + str(j.get_connexion()))
+                                queue_des_messages[j.get_connexion()].put("refuser;Vous n'avez pas été selectionné par l'administrateur")
+                                joueurs_en_attente.remove(j)
+                                #La demande de deconnexion se fait ensuite côté client
+
+                    if message[0] == "accepter_joueur":
+                        idx = int(message[1])
+                        j = joueurs_en_attente[idx]
+                        joueurs.append(j)
+                        print("joueurs : " + str(joueurs))
+                        print(j.get_connexion())
+                        queue_des_messages[j.get_connexion()].put("accepter;Vous avez été selectionné par l'administrateur\nA vous de jouer "+j.get_name()+"!")
+
+                        joueurs_en_attente.remove(j)
 
                     if message[0] == "deconnexion":
 
-                        if connexion is connexion_admin:
-                            connexion_admin = None
+                        if connexion is adm.get_connexion():
                             admin_present = False
-                        #Fermer la connexion
+                            adm = None
+                        # Fermer la connexion
                         exceptional.append(connexion)
-
-                    if message[0] == "demande_autorisation":
-                        retour="demande_authorisation_admin;"+message[1]
-                        queue_des_messages[connexion_admin].put(retour.encode())
-
 
                     if connexion not in outputs:
                         outputs.append(connexion)
@@ -181,8 +205,7 @@ while inputs:
                 connexion.close()
                 del queue_des_messages[connexion]
 
-
-    #Section de l'envoie de message aux clients
+    # Section de l'envoie de message aux clients
 
     for connexion in writable:
 
@@ -194,7 +217,6 @@ while inputs:
 
         else:
             connexion.send(message_suivant)
-
 
     for connexion in exceptional:
 
@@ -211,7 +233,3 @@ while inputs:
         print("outputs", outputs)
         print("exceptional", exceptional)
         exceptional.remove(connexion)
-
-
-
-
