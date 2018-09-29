@@ -5,6 +5,3 @@ __pycache__/Game.cpython-36.pyc
 .idea/modules.xml
 .idea/misc.xml
 .idea/bataille_navale-reseau.iml
-UI_Admin.py
-UI_Client.py
-*.py
