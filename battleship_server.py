@@ -32,7 +32,7 @@ code_retour_au_client = {
     "authentification_reussie": "authentification_reussie;Authentification reussie ! Bienvenue ",
     "authentification_admin": "authentification_admin;Authentification reussie !",
     "admin_deja_present": "admin_deja_present;L'administrateur est déjà connecté",
-    "admin_absent": "erreur_presence_admin;Erreur : Aucun administrateur connecté",
+    "admin_absent": "admin_absent;Erreur : Aucun administrateur connecté",
     "erreur_authentification": ["erreur_authentification;Erreur : Login incorrect",
                                 "erreur_authentification;Erreur : Mot de passe incorrect"],
     "initialisation": "initialisation;Plateau initialisé"
@@ -193,12 +193,7 @@ while inputs:
                         #pla.detecterbateautouche
                         #detecterbateaucoule
 
-
                     if message[0] == "deconnexion":
-
-                        if connexion is adm.get_connexion():
-                            admin_present = False
-                            adm = None
                         # Fermer la connexion
                         exceptional.append(connexion)
 
@@ -238,6 +233,13 @@ while inputs:
 
         connexion.close()
         del queue_des_messages[connexion]
+
+        if admin_present:
+            if connexion is adm.get_connexion():
+                adm = None
+                admin_present = False
+        else:
+            pass
 
         print("VERBOSE DECONNEXION")
         print("inputs", inputs)
