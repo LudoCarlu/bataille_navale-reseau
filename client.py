@@ -2,6 +2,7 @@ import socket
 import game as game
 import time
 import select
+import queue
 
 hote = 'localhost'
 port = 2011
@@ -213,9 +214,12 @@ try:
         time.sleep(0.5)
 
     if role == "joueur":
+
         print("Veuillez attendre la décision de l'administrateur")
         inputs = [connexion_avec_serveur]
         outputs = []
+        queue_des_messages = {}
+        queue_des_messages[connexion_avec_serveur] = queue.Queue()
 
         while connexion_avec_serveur:
 
@@ -230,7 +234,7 @@ try:
                     message = decode_retour_serveur(message_du_serveur_bytes)
                     code_retour = message[0]
                     data = message[1]
-                    
+
                     print(data)
 
                     if code_retour is "refuser":
@@ -238,7 +242,41 @@ try:
                         print("Fermeture de la connexion")
                         connexion_avec_serveur.close()
 
+                    if connexion not in outputs:
+                        outputs.append(connexion)
 
+                else:
+                    if connexion in outputs:
+                        outputs.remove(connexion)
+                    inputs.remove(connexion)
+                    connexion.close()
+                    del queue_des_messages[connexion]
+
+            for connexion in writable:
+                try:
+                    message_suivant = queue_des_messages[connexion].get_nowait()
+                    print("Message suivant : " + str(message_suivant))
+
+                except queue.Empty:
+                    outputs.remove(connexion)
+
+                else:
+                    connexion.send(message_suivant)
+
+            for connexion in exceptional:
+                inputs.remove(connexion)
+
+                if connexion in outputs:
+                    outputs.remove(connexion)
+
+                connexion.close()
+                del queue_des_messages[connexion]
+
+                print("VERBOSE DECONNEXION")
+                print("inputs", inputs)
+                print("outputs", outputs)
+                print("exceptional", exceptional)
+                exceptional.remove(connexion)
 
 
 

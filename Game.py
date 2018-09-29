@@ -48,6 +48,7 @@ class Plateau:
                 else:
                     print('~', end = ' ')
             print()
+
     def detecter_bateau_touche(self,coord):
         coordy = coord[0] # #1
         coordx = coord[1] # #4  -> La tete est a 1, 1

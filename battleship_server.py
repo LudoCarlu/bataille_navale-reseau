@@ -188,6 +188,12 @@ while inputs:
                                 outputs.append(j.get_connexion())
                                 #La demande de deconnexion se fait ensuite côté client
 
+                    if message[0] == "lancement_tir":
+                        pass
+                        #pla.detecterbateautouche
+                        #detecterbateaucoule
+
+
                     if message[0] == "deconnexion":
 
                         if connexion is adm.get_connexion():
