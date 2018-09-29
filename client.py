@@ -1,6 +1,7 @@
 import socket
 import game as game
 import time
+import select
 
 hote = 'localhost'
 port = 2011
@@ -213,24 +214,29 @@ try:
 
     if role == "joueur":
         print("Veuillez attendre la décision de l'administrateur")
+        inputs = [connexion_avec_serveur]
+        outputs = []
 
         while connexion_avec_serveur:
 
-            message_du_serveur_bytes = connexion_avec_serveur.recv(1024)
+            readable, writable, exceptional = select.select(inputs, outputs, inputs, 0.05)
 
-            if message_du_serveur_bytes:
+            for connexion in readable:
 
-                message = decode_retour_serveur(message_du_serveur_bytes)
-                print(str(message))
+                message_du_serveur_bytes = connexion_avec_serveur.recv(1024)
 
-                code_retour = message[0]
-                data = message[1]
-                print(data)
+                if message_du_serveur_bytes:
 
-                if code_retour is "refuser":
-                    envoyer_appel_fonction("deconnexion", "Deconnexion")
-                    print("Fermeture de la connexion")
-                    connexion_avec_serveur.close()
+                    message = decode_retour_serveur(message_du_serveur_bytes)
+                    code_retour = message[0]
+                    data = message[1]
+                    
+                    print(data)
+
+                    if code_retour is "refuser":
+                        envoyer_appel_fonction("deconnexion", "Deconnexion")
+                        print("Fermeture de la connexion")
+                        connexion_avec_serveur.close()
 
 
 

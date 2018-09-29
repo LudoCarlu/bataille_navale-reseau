@@ -172,16 +172,20 @@ while inputs:
                         j = joueurs_en_attente[idx]
                         joueurs.append(j)
                         print("joueurs : " + str(joueurs))
-                        queue_des_messages[j.get_connexion()].put("accepter;Vous avez été selectionné par l'administrateur\nA vous de jouer "+j.get_name()+"!")
+                        to_send = "accepter;Vous avez été selectionné par l'administrateur\nA vous de jouer "+j.get_name()+"!"
+                        queue_des_messages[j.get_connexion()].put(to_send.encode())
                         joueurs_en_attente.remove(j)
+                        outputs.append(j.get_connexion())
 
                     if message[0] == "refuser_joueur":
                         print("len ",len(joueurs_en_attente))
                         if len(joueurs_en_attente) > 0:
                             for j in joueurs_en_attente:
-                                print("Refus " + str(j.get_connexion()))
-                                queue_des_messages[j.get_connexion()].put("refuser;Vous n'avez pas été selectionné par l'administrateur")
+                                print("Refus " + str(j.get_connexion().getsockname()))
+                                to_send = "refuser;Vous n'avez pas été selectionné par l'administrateur"
+                                queue_des_messages[j.get_connexion()].put(to_send.encode())
                                 joueurs_en_attente.remove(j)
+                                outputs.append(j.get_connexion())
                                 #La demande de deconnexion se fait ensuite côté client
 
                     if message[0] == "deconnexion":
@@ -211,7 +215,7 @@ while inputs:
 
         try:
             message_suivant = queue_des_messages[connexion].get_nowait()
-            print(connexion, ":", message_suivant.decode())
+            print("Message suivant : " + str(message_suivant))
 
         except queue.Empty:
             outputs.remove(connexion)
