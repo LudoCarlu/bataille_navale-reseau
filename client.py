@@ -213,17 +213,24 @@ try:
 
     if role == "joueur":
         print("Veuillez attendre la décision de l'administrateur")
-        reponse = decode_retour_serveur(connexion_avec_serveur.recv(1024))
-        print(str(reponse))
 
-        code_retour = reponse[0]
-        message = reponse[1]
-        print(message)
+        while connexion_avec_serveur:
 
-        if(code_retour is "refuser"):
-            envoyer_appel_fonction("deconnexion", "Deconnexion")
-            print("Fermeture de la connexion")
-            connexion_avec_serveur.close()
+            message_du_serveur_bytes = connexion_avec_serveur.recv(1024)
+
+            if message_du_serveur_bytes:
+
+                message = decode_retour_serveur(message_du_serveur_bytes)
+                print(str(message))
+
+                code_retour = message[0]
+                data = message[1]
+                print(data)
+
+                if code_retour is "refuser":
+                    envoyer_appel_fonction("deconnexion", "Deconnexion")
+                    print("Fermeture de la connexion")
+                    connexion_avec_serveur.close()
 
 
 
