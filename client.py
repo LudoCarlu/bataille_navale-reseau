@@ -3,12 +3,15 @@ import game as game
 import time
 import select
 import queue
+<<<<<<< HEAD
 import UI_Admin as ui_admin
 import UI_Connexion as iu_conn
 from tkinter import messagebox
+=======
+>>>>>>> 7f350f0cc08356901170a66ed7b94f7fa9e8bb08
 
 hote = 'localhost'
-port = 2012
+port = 2011
 
 
 def envoyer_appel_fonction(code, fonction_avec_args):
@@ -134,7 +137,10 @@ try:
         commande = 0
         taille_plateau = 0
 
-        taille_plateau = ui_admin.fenetre_choix_dimensions()
+        #Création du plateau
+        while taille_plateau < 10:
+            taille_plateau = int(input("Quelle est la taille de votre plateau? Minimum : 10 \n"))
+            print()
 
         reponse = initialisation_du_plateau(taille_plateau)
         code_retour = reponse[0]
@@ -143,7 +149,7 @@ try:
         print(message)
         print()
 
-        print("=== MENU CREATION DE BATEAU ==")
+        print("=== MENU CREATION DE BATEAU ===")
         print("".join(demande_affichage_plateau()))
         print()
 
@@ -155,7 +161,25 @@ try:
         nb_de_bateau_max = 0
         i=0
         while i < nb_de_bateau_max:
-            type_bateau,orientation,x,y = ui_admin.fenetre_placement(taille_plateau)
+
+            print("Quel type de bateau voulez vous placer ?")
+            type_bateau = int(input("1 : Petit\n2 : Moyen\n3 : Grand\n"))
+            orientation = int(input("1 : Horizontale\n2 :Verticale\n"))
+            x = input("Coordonnée X de la tête: ")
+            y = input("Coordonnée Y de la tête: ")
+
+            if type_bateau == 1:
+                type_bateau = "petit"
+            elif type_bateau == 2:
+                type_bateau = "moyen"
+            elif type_bateau == 3:
+                type_bateau = "grand"
+
+            if orientation == 1:
+                orientation = "horizontale"
+            elif orientation == 2:
+                orientation = "verticale"
+
             try:
                 game.Bateau(type_bateau,orientation,(x,y))
                 code = "creation_bateau"
