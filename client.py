@@ -127,7 +127,7 @@ try:
         print(message)
         print()
 
-        print("=== MENU CREATION DE BATEAU ==")
+        print("=== MENU CREATION DE BATEAU ===")
         print("".join(demande_affichage_plateau()))
         print()
 
