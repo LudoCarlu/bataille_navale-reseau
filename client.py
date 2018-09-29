@@ -4,6 +4,8 @@ import time
 import select
 import queue
 import UI_Admin as ui_admin
+import UI_Connexion as iu_conn
+from tkinter import messagebox
 
 hote = 'localhost'
 port = 2012
@@ -13,11 +15,13 @@ def envoyer_appel_fonction(code, fonction_avec_args):
     to_send = code + ";" + str(fonction_avec_args)
     connexion_avec_serveur.send(to_send.encode())
 
+
 def decode_retour_serveur(message_bytes):
     message_str = message_bytes.decode("utf-8")
     retour = message_str.split(";")
     return retour
-   
+
+
 def menu_admin():
     commande = 0
     while commande not in range(1,5):
@@ -29,6 +33,7 @@ def menu_admin():
         commande = int(input("Que souhaitez vous faire ? "))
     return commande
 
+
 def initialisation_du_plateau(taille):
     code = "initialisation"
     data = "game.Plateau" + "(" + str(taille_plateau) + ")"
@@ -37,11 +42,55 @@ def initialisation_du_plateau(taille):
     
     return reponse;
 
+
 def demande_affichage_plateau():
     envoyer_appel_fonction("demande_affichage_plateau","")
     plateau = decode_retour_serveur(connexion_avec_serveur.recv(1024))
     
     return "".join(plateau)
+
+
+def authentification(login, mdp, nombre_tentative):
+
+    role = ""
+    code = "authentification"
+    data = "authentification" + str((login, mdp))
+
+    envoyer_appel_fonction(code, data)
+    reponse = decode_retour_serveur(connexion_avec_serveur.recv(1024))
+    code_retour = reponse[0]
+
+    try:
+        message = reponse[1]
+        print(message)
+
+    except Exception as e:
+        print(e)
+
+    if code_retour == "authentification_reussie" or code_retour == "authentification_admin":
+        print("Role:",reponse[2])
+        role = reponse[2]
+        messagebox.showinfo("Connexion", "Connexion reussie")
+
+    elif code_retour == "erreur_authentification":
+        messagebox.showerror("Erreur", message + "\nRecommencez : " + str((3-nombre_tentative)) + "restantes")
+
+    elif code_retour == "admin_absent" or code_retour == "admin_deja_present":
+        messagebox.showerror("Erreur", message+'\nFermeture de la connexion')
+        envoyer_appel_fonction("deconnexion","Deconnexion")
+        time.sleep(2)
+        print("Fermeture de la connexion")
+        connexion_avec_serveur.close()
+
+    if nombre_tentative == 3:
+        print()
+        messagebox.showerror("Erreur", "3 tentatives échouées\nFermeture de la connexion")
+        envoyer_appel_fonction("deconnexion","Deconnexion")
+        time.sleep(2)
+        print("Fermeture de la connexion")
+        connexion_avec_serveur.close()
+
+    return code_retour, role
 
 
 ## DEBUT SEQUENCE CLIENT ##
@@ -70,42 +119,11 @@ while (
        ) 
        and compteur_tentative <3
        ):
-    
-    print("Authentifiez vous :")
-    login = input("Login :")
-    mdp = input("Password :")
-    
-    code = "authentification"
-    data = "authentification" + str((login,mdp))
-    
-    envoyer_appel_fonction(code, data)
-    reponse = decode_retour_serveur(connexion_avec_serveur.recv(1024))
-    code_retour = reponse[0]
-    print(code_retour)
-    try:
-        message = reponse[1]
-        print(message)
-    except Exception  as e:
-        print(e)
-    
-    if code_retour == "authentification_reussie" or code_retour == "authentification_admin":
-        role = reponse[2]
-        print("Role:",role)
 
+    login, mdp = iu_conn.fenetre_connexion()
+    code_retour, role = authentification(login, mdp, compteur_tentative)
     compteur_tentative += 1
-    print()
 
-if code_retour == "admin_absent" or code_retour == "admin_deja_present":
-    envoyer_appel_fonction("deconnexion","Deconnexion")
-    print("Fermeture de la connexion")
-    connexion_avec_serveur.close()
-
-if compteur_tentative == 3:
-    print("3 tentatives échouées")
-    envoyer_appel_fonction("deconnexion","Deconnexion")
-    print("Fermeture de la connexion")
-    connexion_avec_serveur.close()
-    
 print("Suite du scénario")
 try:
 
@@ -153,17 +171,6 @@ try:
             except:
                 print('Erreur lors de la création de vos paramètres bateau')
 
-        """
-        reponse = decode_retour_serveur(connexion_avec_serveur.recv(1024))
-        code_retour = reponse[0]
-        print(code_retour)
-        reponse = decode_retour_serveur(connexion_avec_serveur.recv(1024))
-        code_retour = reponse[0]
-        print(code_retour)
-        reponse = decode_retour_serveur(connexion_avec_serveur.recv(1024))
-        code_retour = reponse[0]
-        print(code_retour)
-        """
 
         ## PART 2 GESTION DES CONNEXIONS
 
