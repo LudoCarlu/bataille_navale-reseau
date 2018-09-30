@@ -170,6 +170,30 @@ while inputs:
 
                         queue_des_messages[connexion].put(retour.encode())
 
+                    if message[0] == "accepter_joueur_ui":
+                        idx_joueurs_acceptés = message[1].split(",")
+
+                        print("IDS" + str(idx_joueurs_acceptés))
+                        print(str(joueurs_en_attente))
+
+                        for j in joueurs_en_attente:
+
+                            if str(joueurs_en_attente.index(j)) in idx_joueurs_acceptés:
+                                print("attente id" + str(joueurs_en_attente.index(j)))
+                                joueurs.append(j)
+                                to_send = "accepter;Vous avez été selectionné par l'administrateur\nA vous de jouer " + j.get_name() + "!"
+                                queue_des_messages[j.get_connexion()].put(to_send.encode())
+                                outputs.append(j.get_connexion())
+
+                        for j in joueurs_en_attente:
+                            if j not in joueurs:
+                                to_send = "refuser;Vous n'avez pas été selectionné par l'administrateur"
+                                queue_des_messages[j.get_connexion()].put(to_send.encode())
+                                joueurs_en_attente.remove(j)
+                                outputs.append(j.get_connexion())
+                            else:
+                                joueurs_en_attente.remove(j)
+                    """
                     if message[0] == "accepter_joueur":
                         idx = int(message[1])
                         j = joueurs_en_attente[idx]
@@ -190,7 +214,7 @@ while inputs:
                                 joueurs_en_attente.remove(j)
                                 outputs.append(j.get_connexion())
                                 #La demande de deconnexion se fait ensuite côté client
-
+                    """
                     # Envoyer par l'admin
                     if message[0] == "debut_partie":
                         # Pour les tests

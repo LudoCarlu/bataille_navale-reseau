@@ -189,7 +189,7 @@ try:
         time.sleep(1)
 
 
-        envoyer_appel_fonction("refuser_joueur", "") #Vide le tableau des joueurs en attente
+        #envoyer_appel_fonction("refuser_joueur", "") #Vide le tableau des joueurs en attente
         time.sleep(0.5)
 
         envoyer_appel_fonction("debut_partie", "La partie commence !")
