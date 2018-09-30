@@ -1,7 +1,7 @@
-#User manual
+# User manual
 CARLU Ludovic - FAIVRE Maxime - LE BORGE Kévin
 
-##Introduction - Prérequis
+## Introduction - Prérequis
 On considère que le serveur de jeu et les différents clients sont sur des machines UNIX. Cela implique donc que python est pré-installé. 
 
 Il faut également installer des dépendances pour que l'application fonctionne correctement : pandas et tekinter.
@@ -16,7 +16,7 @@ Tekinter nous est utile pour la partie graphique.
 
 Lors du lancement des instances du jeu il faut être vigilant et lancer avec `python3` et non python.
 
-##Initialisation du jeu
+## Initialisation du jeu
 Dans un premier temps, il faut récupérer les sources et extraire dans un dossier.
 
 Il faut ensuite se positionner dans ce dossier pour pouvoir lancer l'instance sur le serveur
