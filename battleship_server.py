@@ -159,14 +159,14 @@ while inputs:
                     if message[0] == "liste_joueurs_en_attente":
                         retour = ""
                         i = 0
-                        retour = "[ "
                         for j in joueurs_en_attente:
-                            retour += str(i) + ":" + j.get_name() + " "
-                            i+=1
-                        retour += "]"
+                            retour += str(i) + ":" + j.get_name()
+                            if i != len(joueurs_en_attente)-1:
+                                retour += ","
+                            i += 1
 
                         if len(joueurs_en_attente) == 0:
-                            retour = "[ Aucun joueur en attente ]"
+                            retour = "None"
 
                         queue_des_messages[connexion].put(retour.encode())
 

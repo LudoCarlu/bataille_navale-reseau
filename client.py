@@ -150,12 +150,14 @@ try:
         #placer_bateau(self, classplateau,boat)
         #Création des bateaux
         ajouter_bateau = True
-        nb_de_bateau_max = 2
+        nb_de_bateau_max = 3
         i=0
+        ini_plateau=""
         while i < nb_de_bateau_max:
-
-            type_bateau, orientation, x, y = ui_admin.fenetre_placement(taille_plateau)
+            print(taille_plateau)
+            type_bateau, orientation, x, y = ui_admin.fenetre_placement(taille_plateau,ini_plateau)
             print(type_bateau,orientation,x,y)
+            print("ok")
 
             #game.Bateau(type_bateau,orientation,(x,y))
             code = "creation_bateau"
@@ -168,8 +170,10 @@ try:
             print()
             reponse = decode_retour_serveur(connexion_avec_serveur.recv(1024))
             code_retour = reponse[0]
+            print("plateau")
             print(code_retour)
             print(message)
+            ini_plateau=code_retour
 
             #print('Erreur lors de la création de vos paramètres bateau')
 

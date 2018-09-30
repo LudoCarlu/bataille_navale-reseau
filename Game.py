@@ -70,9 +70,10 @@ class Plateau:
                 bateau.etat = 1
                 for i in range(bateau.size):
                     if bateau.orientation == 'horizontal':
-                        self.plateau[bateau.head_coord[0]][bateau.head_coord[1]+i] = 'X'
+                        self.plateau[bateau.head_coord[0]][bateau.head_coord[1]+i] = 'C'
                     else:
-                        self.plateau[bateau.head_coord[0]+i][bateau.head_coord[1]] = 'X'
+                        self.plateau[bateau.head_coord[0]+i][bateau.head_coord[1]] = 'C'
+                return 'C'
                       
                     
                      
@@ -154,13 +155,16 @@ class Joueur:
         coordy = coord[0]
         coordx = coord[1]
         if plateau[coordy][coordx] =='~':
-            return 'Raté!'
-        elif plateau[coordy][coordx] =='1':
-            return 'Touché!'
-            plateau[coordy][coordx] ='O'
+            return 'Raté !'
+        elif plateau[coordy][coordx] =='B':
+            plateau[coordy][coordx] ='T'
             bateau = classplateau.detecter_bateau_touche((coordx,coordy))
-            classplateau.detecter_bateaux_coule(bateau)
-        elif plateau[coordy][coordx] =='O':
+            is_coule = classplateau.detecter_bateaux_coule(bateau)
+            if is_coule == "C":
+                return 'Coulé !'
+            else:
+                return 'Touché !'
+        elif plateau[coordy][coordx] =='T':
             return 'Déja touché..'
         
         
@@ -197,16 +201,16 @@ class Administrateur:
         orientation = boat.orientation
         try:
             for i in range(taille): ## Verif du placement
-                if orientation == 'horizontal' and plateau[coordy][coordx+i]in ('1','2'):
+                if orientation == 'horizontal' and plateau[coordy][coordx+i]in ('B','2'):
                     raise Exception(" Placement impossible ")
-                elif orientation == 'vertical'  and plateau[coordy+i][coordx] in ('1','2'):
+                elif orientation == 'vertical'  and plateau[coordy+i][coordx] in ('B','2'):
                     raise Exception(" Placement impossible ")
             ## Placement
             for i in range(taille):
                 if orientation == 'horizontale':
-                    plateau[coordy][coordx+i] = '1'
+                    plateau[coordy][coordx+i] = 'B'
                 elif orientation == 'verticale':
-                     plateau[coordy+i][coordx] = '1'   
+                     plateau[coordy+i][coordx] = 'B'
             classplateau.list_bateau.append(boat)
             return True
         except Exception as e:
