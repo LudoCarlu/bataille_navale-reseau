@@ -4,7 +4,9 @@ import select
 import queue
 import UI_Admin as ui_admin
 import UI_Connexion as iu_conn
+import UI_Client as ui_client
 from tkinter import messagebox
+import tkinter as tk
 
 hote = 'localhost'
 port = 2013
@@ -228,30 +230,10 @@ try:
                         print("Fermeture de la connexion")
                         connexion_avec_serveur.close()
 
-                    if code_retour == "a_toi":
-                        print(data)
-                        x = input("Coord X : ")
-                        y = input("Coord Y : ")
-                        code = "lancement_tir;"
-                        fct = "j.lancer_tir(plateau, (" + str(x) +","+ str(y) + "))"
-                        to_send = code + fct
-                        queue_des_messages[connexion].put(to_send.encode())
-                        # print("".join(demande_affichage_plateau()))
-
-                    if code_retour == "pas_toi":
-                        print(data)
-
-                    if code_retour == "resultat_tir":
-                        print(data)
-                        to_send = "au_suivant;" + ""
-                        queue_des_messages[connexion].put(to_send.encode())
-
-                    if code_retour == "fin_de_partie":
-                        # Score : X, Vous avez gagné ou perdu ou nul
-                        print(data)
-
-                    if connexion not in outputs:
-                        outputs.append(connexion)
+                    else:
+                        fenetre = tk.Tk()
+                        test = ui_client.UI_Client(fenetre,demande_affichage_plateau(), connexion_avec_serveur)
+                        fenetre.mainloop()
 
                 else:
                     """
