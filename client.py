@@ -1,5 +1,4 @@
 import socket
-import game as game
 import time
 import select
 import queue
@@ -8,7 +7,7 @@ import UI_Connexion as iu_conn
 from tkinter import messagebox
 
 hote = 'localhost'
-port = 2011
+port = 2013
 
 
 def envoyer_appel_fonction(code, fonction_avec_args):
@@ -58,12 +57,15 @@ def authentification(login, mdp, nombre_tentative, fenetre):
     if code_retour == "authentification_reussie" or code_retour == "authentification_admin":
         print("Role:",reponse[2])
         role = reponse[2]
-        #fenetre.withdraw()
         messagebox.showinfo("Connexion", "Connexion reussie")
+        fenetre.destroy()
+
 
     elif code_retour == "erreur_authentification":
-        #fenetre.withdraw()
+        fenetre.withdraw()
         messagebox.showerror("Erreur", message + "\nRecommencez : " + str((3-nombre_tentative)) + "restantes")
+        fenetre.destroy()
+
 
     elif code_retour == "admin_absent" or code_retour == "admin_deja_present":
         #fenetre.withdraw()
@@ -157,8 +159,8 @@ try:
 
             #game.Bateau(type_bateau,orientation,(x,y))
             code = "creation_bateau"
-            #data = "adm.placer_bateau(plateau,game.Bateau('" + type_bateau + "','" + orientation + "',(" + x + "," + y + ")))"
-            data = "adm.placer_bateau(plateau,game.Bateau(" + type_bateau + "," + orientation + ",(" + str(x) + "," + str(y) + ")))"
+            data = "adm.placer_bateau(plateau,game.Bateau('" + type_bateau + "','" + orientation + "',(" + str(x) + "," + str(y) + ")))"
+            #data = "adm.placer_bateau(plateau,game.Bateau(" + type_bateau + "," + orientation + ",(" + str(x) + "," + str(y) + ")))"
 
             i = i + 1
             print("code :" + code + " data : " + data)

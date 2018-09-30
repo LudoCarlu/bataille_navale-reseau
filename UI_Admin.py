@@ -22,7 +22,7 @@ def fenetre_choix_dimensions(titre="Choix de la taille du tableau et placement")
     def OK_list():
         global choix
         choix = list_taille.curselection()[0]
-        toplevel.quit()
+        #toplevel.quit()
         toplevel.destroy()
 
     Button(toplevel, text='OK', padx=100, pady=10, command=OK_list).pack(side=RIGHT)
@@ -63,18 +63,18 @@ def fenetre_placement(tailleplateau,titre="Placement des bateaux"):
         label_x.config(text=" position x : "+str(pos_x))
         label_y.config(text=" position x : "+str(pos_y))
 
-    frame_grille = LabelFrame(toplevel, text="Grille").grid(row=0)
+    frame_grille = LabelFrame(toplevel, text="Grille").grid(row=10,column=11)
     for i in range(tailleplateau):
         for j in range(tailleplateau):
             b = Button(frame_grille,text='-',
                        command=lambda i=i, j=j: definition_pos(i, j),
-                       width=3,height=3, fg="Blue").grid(row=i, column=j+1)
+                       width=2,height=2, fg="Blue").grid(row=i, column=j+1)
     def OK_list():
         try:
             global taille,pos
             taille = list_taille.curselection()[0]
             pos = list_pos.curselection()[0]
-            toplevel.quit()
+            #toplevel.quit()
             toplevel.destroy()
         except:
             showerror("Erreur","Veuillez sélectionner tous les champ")

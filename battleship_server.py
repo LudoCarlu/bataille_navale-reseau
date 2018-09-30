@@ -10,11 +10,11 @@ import socket
 import select
 import queue
 import pandas as pd
-import game as game
+import Game as game
 
 hote = ''
 global port
-port = 2011
+port = 2013
 
 users = pd.read_csv("users.csv")
 

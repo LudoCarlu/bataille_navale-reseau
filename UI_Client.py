@@ -89,12 +89,6 @@ class UI_Client (Frame):
 
 
 
-sizePlateau = 10
-fenetre = Tk()
-plateau = "~ ~ ~ ~ ~ ~ ~ ~\n~ ~ ~ ~ ~ ~ ~ ~\n~ ~ ~ ~ ~ ~ ~ ~\n~ ~ ~ ~ ~ ~ ~ ~\n~ ~ ~ ~ ~ ~ ~ ~\n~ ~ ~ ~ ~ ~ ~ ~\n~ ~ ~ ~ ~ ~ ~ ~\n~ ~ ~ ~ ~ ~ ~ ~\n"
-fenetre.title("Interface Client")
-UI_Client(fenetre,plateau)
-fenetre.mainloop()
 
 
 
