@@ -58,15 +58,15 @@ def authentification(login, mdp, nombre_tentative, fenetre):
     if code_retour == "authentification_reussie" or code_retour == "authentification_admin":
         print("Role:",reponse[2])
         role = reponse[2]
-        fenetre.withdraw()
+        #fenetre.withdraw()
         messagebox.showinfo("Connexion", "Connexion reussie")
 
     elif code_retour == "erreur_authentification":
-        fenetre.withdraw()
+        #fenetre.withdraw()
         messagebox.showerror("Erreur", message + "\nRecommencez : " + str((3-nombre_tentative)) + "restantes")
 
     elif code_retour == "admin_absent" or code_retour == "admin_deja_present":
-        fenetre.withdraw()
+        #fenetre.withdraw()
         messagebox.showerror("Erreur", message+'\nFermeture de la connexion')
         envoyer_appel_fonction("deconnexion","Deconnexion")
         time.sleep(2)
@@ -75,7 +75,7 @@ def authentification(login, mdp, nombre_tentative, fenetre):
 
     if nombre_tentative == 3:
         print()
-        fenetre.withdraw()
+        #fenetre.withdraw()
         messagebox.showerror("Erreur", "3 tentatives échouées\nFermeture de la connexion")
         envoyer_appel_fonction("deconnexion","Deconnexion")
         time.sleep(2)
@@ -148,7 +148,7 @@ try:
         #placer_bateau(self, classplateau,boat)
         #Création des bateaux
         ajouter_bateau = True
-        nb_de_bateau_max = 0
+        nb_de_bateau_max = 2
         i=0
         while i < nb_de_bateau_max:
 

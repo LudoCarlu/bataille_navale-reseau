@@ -6,7 +6,7 @@ def fenetre_connexion():
 
     def authentification():
         fenetre.quit()
-        # fenetre.destroy()
+        fenetre.destroy()
 
     def afficher_erreur(erreur):
         fenetre.withdraw()
@@ -16,7 +16,7 @@ def fenetre_connexion():
         fenetre.withdraw()
         messagebox.showinfo(title="Information", message=message)
 
-    fenetre = Tk()
+    fenetre = Toplevel()
 
     fenetre.wm_title("Connexion")
 
