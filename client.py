@@ -22,18 +22,6 @@ def decode_retour_serveur(message_bytes):
     return retour
 
 
-def menu_admin():
-    commande = 0
-    while commande not in range(1,5):
-        print("Menu administrateur")
-        print("1: Initialiser le plateau")
-        print("2: Placer des bateaux")
-        print("3: Créer un joueur")
-        print("4: Accepter les joueurs")
-        commande = int(input("Que souhaitez vous faire ? "))
-    return commande
-
-
 def initialisation_du_plateau(taille):
     code = "initialisation"
     data = "game.Plateau" + "(" + str(taille_plateau) + ")"
@@ -50,7 +38,7 @@ def demande_affichage_plateau():
     return "".join(plateau)
 
 
-def authentification(login, mdp, nombre_tentative):
+def authentification(login, mdp, nombre_tentative, fenetre):
 
     role = ""
     code = "authentification"
@@ -70,12 +58,15 @@ def authentification(login, mdp, nombre_tentative):
     if code_retour == "authentification_reussie" or code_retour == "authentification_admin":
         print("Role:",reponse[2])
         role = reponse[2]
+        fenetre.withdraw()
         messagebox.showinfo("Connexion", "Connexion reussie")
 
     elif code_retour == "erreur_authentification":
+        fenetre.withdraw()
         messagebox.showerror("Erreur", message + "\nRecommencez : " + str((3-nombre_tentative)) + "restantes")
 
     elif code_retour == "admin_absent" or code_retour == "admin_deja_present":
+        fenetre.withdraw()
         messagebox.showerror("Erreur", message+'\nFermeture de la connexion')
         envoyer_appel_fonction("deconnexion","Deconnexion")
         time.sleep(2)
@@ -84,6 +75,7 @@ def authentification(login, mdp, nombre_tentative):
 
     if nombre_tentative == 3:
         print()
+        fenetre.withdraw()
         messagebox.showerror("Erreur", "3 tentatives échouées\nFermeture de la connexion")
         envoyer_appel_fonction("deconnexion","Deconnexion")
         time.sleep(2)
@@ -120,9 +112,12 @@ while (
        and compteur_tentative <3
        ):
 
-    login, mdp = iu_conn.fenetre_connexion()
-    code_retour, role = authentification(login, mdp, compteur_tentative)
+    login, mdp, fenetre = iu_conn.fenetre_connexion()
+    code_retour, role = authentification(login, mdp, compteur_tentative, fenetre)
     compteur_tentative += 1
+
+print("Wait 3s")
+time.sleep(3)
 
 print("Suite du scénario")
 try:
@@ -153,26 +148,28 @@ try:
         #placer_bateau(self, classplateau,boat)
         #Création des bateaux
         ajouter_bateau = True
-        nb_de_bateau_max = 3
+        nb_de_bateau_max = 0
         i=0
         while i < nb_de_bateau_max:
 
             type_bateau, orientation, x, y = ui_admin.fenetre_placement(taille_plateau)
+            print(type_bateau,orientation,x,y)
 
-            try:
-                game.Bateau(type_bateau,orientation,(x,y))
-                code = "creation_bateau"
-                data = "adm.placer_bateau(plateau,Bateau('" + type_bateau + "','" + orientation + "',(" + x + "," + y + ")))"
-                i = i + 1
-                print()
-                envoyer_appel_fonction(code, data)
-                print()
-                reponse = decode_retour_serveur(connexion_avec_serveur.recv(1024))
-                code_retour = reponse[0]
-                print(code_retour)
-                print(message)
-            except:
-                print('Erreur lors de la création de vos paramètres bateau')
+            #game.Bateau(type_bateau,orientation,(x,y))
+            code = "creation_bateau"
+            #data = "adm.placer_bateau(plateau,game.Bateau('" + type_bateau + "','" + orientation + "',(" + x + "," + y + ")))"
+            data = "adm.placer_bateau(plateau,game.Bateau(" + type_bateau + "," + orientation + ",(" + str(x) + "," + str(y) + ")))"
+
+            i = i + 1
+            print("code :" + code + " data : " + data)
+            envoyer_appel_fonction(code, data)
+            print()
+            reponse = decode_retour_serveur(connexion_avec_serveur.recv(1024))
+            code_retour = reponse[0]
+            print(code_retour)
+            print(message)
+
+            #print('Erreur lors de la création de vos paramètres bateau')
 
 
         ## PART 2 GESTION DES CONNEXIONS
@@ -182,6 +179,8 @@ try:
         reponse = decode_retour_serveur(connexion_avec_serveur.recv(1024))
         code_retour = reponse[0]
         print(code_retour)
+
+
 
         stop = False
         i = 0
@@ -202,6 +201,11 @@ try:
 
         envoyer_appel_fonction("refuser_joueur", "") #Vide le tableau des joueurs en attente
         time.sleep(0.5)
+
+        envoyer_appel_fonction("debut_partie", "La partie commence !")
+
+        while connexion_avec_serveur:
+            pass
 
     if role == "joueur":
 
@@ -225,17 +229,35 @@ try:
                     code_retour = message[0]
                     data = message[1]
 
-                    print(data)
-
-                    if code_retour is "refuser":
+                    if code_retour == "refuser":
+                        print(data)
                         envoyer_appel_fonction("deconnexion", "Deconnexion")
                         print("Fermeture de la connexion")
                         connexion_avec_serveur.close()
+
+                    if code_retour == "a_toi":
+                        print(data)
+                        x = input("Coord X : ")
+                        y = input("Coord Y : ")
+                        code = "lancement_tir;"
+                        fct = "j.lancer_tir(plateau, (" + str(x) +","+ str(y) + "))"
+                        to_send = code + fct
+                        queue_des_messages[connexion].put(to_send.encode())
+                        # print("".join(demande_affichage_plateau()))
+
+                    if code_retour == "pas_toi":
+                        print(data)
+
+                    if code_retour == "resultat_tir":
+                        print(data)
+                        to_send = "au_suivant;" + ""
+                        queue_des_messages[connexion].put(to_send.encode())
 
                     if connexion not in outputs:
                         outputs.append(connexion)
 
                 else:
+                    print("CLIENT CONNEXION READABLE")
                     if connexion in outputs:
                         outputs.remove(connexion)
                     inputs.remove(connexion)
@@ -261,11 +283,6 @@ try:
 
                 connexion.close()
                 del queue_des_messages[connexion]
-
-                print("VERBOSE DECONNEXION")
-                print("inputs", inputs)
-                print("outputs", outputs)
-                print("exceptional", exceptional)
                 exceptional.remove(connexion)
 
 

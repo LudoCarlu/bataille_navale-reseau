@@ -26,6 +26,7 @@ adm = None
 plateau = None
 joueurs = []
 joueurs_en_attente = []
+index_joueur_qui_joue = 0
 
 
 code_retour_au_client = {
@@ -99,8 +100,10 @@ while inputs:
             # On crée une liste pour les messages de ce client
             queue_des_messages[connexion_avec_client] = queue.Queue()
 
-        else:
+        else :
             message_du_client_bytes = connexion.recv(1024)
+            print("BYTES MSG" + message_du_client_bytes.decode())
+
 
             if message_du_client_bytes:
 
@@ -141,6 +144,7 @@ while inputs:
 
                     if message[0] == "creation_bateau":
                         try:
+                            print("message 1 " + message[1])
                             eval(message[1])
                             retour = plateau.afficher_plateau()
                             print(retour)
@@ -188,11 +192,71 @@ while inputs:
                                 outputs.append(j.get_connexion())
                                 #La demande de deconnexion se fait ensuite côté client
 
-                    if message[0] == "lancement_tir":
-                        pass
-                        #pla.detecterbateautouche
-                        #detecterbateaucoule
+                    # Envoyer par l'admin
+                    if message[0] == "debut_partie":
+                        # Pour les tests
+                        adm.placer_bateau(plateau, game.Bateau('grand', 'horizontal', (1,1)))
+                        adm.placer_bateau(plateau, game.Bateau('moyen', 'verticale', (1, 4)))
 
+                        # On donne le tour au premier arrivée
+                        joueur1 = joueurs[0]
+                        joueur1.set_tour(True)
+                        index_joueur_qui_joue = 0
+
+                        to_send = "a_toi;C'est ton tour de jouer"
+                        queue_des_messages[joueur1.get_connexion()].put(to_send.encode())
+                        outputs.append(joueur1.get_connexion())
+                        print("J1 : " + joueur1.get_name())
+
+                        to_send = "pas_toi;Un autre joueur joue ! Attendez "
+                        for j in joueurs:
+                            if j is not joueur1:
+                                print("Autre joueur : " + j.get_name())
+                                j.set_tour(False)
+                                queue_des_messages[j.get_connexion()].put(to_send.encode())
+                                outputs.append(j.get_connexion())
+
+                    # Envoyer par un joueur
+                    if message[0] == "lancement_tir":
+                        a_joue = False
+                        # On lance lancer_tir(pla, coord)
+                        for j in joueurs:
+                            if connexion is j.get_connexion() and j.get_tour() is True:
+                                retour = "resultat_tir;" + eval(message[1])
+                                queue_des_messages[j.get_connexion()].put(retour.encode())
+                                outputs.append(j.get_connexion())
+                                a_joue = True
+
+                            else:
+                                retour = "pas_toi"
+                                queue_des_messages[j.get_connexion()].put(retour.encode())
+                                outputs.append(j.get_connexion())
+
+                        if a_joue is True:
+
+                            for j in joueurs:
+                                idx = joueurs.index(j)
+
+                                #Le joueur venant de jouer
+                                if j.get_tour() is True:
+                                    print("IDX J", idx)
+                                    j.set_tour(False)
+
+                                    # Si c'était le dernier on repart au début
+                                    if idx == len(joueurs) - 1:
+                                        index_joueur_qui_joue = 0
+                                        break
+                                    # Sinon increment pour le suivant
+                                    else:
+                                        index_joueur_qui_joue +=1
+                                        break
+                            print("IDX JQJ : " + str(index_joueur_qui_joue))
+                            joueurs[index_joueur_qui_joue].set_tour(True)
+                            to_send = "a_toi;C'est ton tour de jouer"
+                            queue_des_messages[joueurs[index_joueur_qui_joue].get_connexion()].put(to_send.encode())
+                            outputs.append(joueurs[index_joueur_qui_joue].get_connexion())
+                            print("PASSER OUTPUTS")
+                            a_joue = False
 
                     if message[0] == "deconnexion":
 
@@ -206,6 +270,8 @@ while inputs:
                     print(e)
                     connexion_du_serveur.close()
             else:
+
+                print("CLOSE CONN READABLE")
                 if connexion in outputs:
                     outputs.remove(connexion)
                 inputs.remove(connexion)
@@ -227,7 +293,7 @@ while inputs:
             connexion.send(message_suivant)
 
     for connexion in exceptional:
-
+        print("SERV EXCEPTION")
         inputs.remove(connexion)
 
         if connexion in outputs:

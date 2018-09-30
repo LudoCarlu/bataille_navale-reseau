@@ -6,7 +6,7 @@ def fenetre_connexion():
 
     def authentification():
         fenetre.quit()
-        fenetre.destroy()
+        # fenetre.destroy()
 
     def afficher_erreur(erreur):
         fenetre.withdraw()
@@ -46,4 +46,4 @@ def fenetre_connexion():
     connexion_button.grid(row=5, column=4)
 
     fenetre.mainloop()
-    return login_text.get(), password_text.get()
+    return login_text.get(), password_text.get(), fenetre

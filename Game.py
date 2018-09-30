@@ -121,6 +121,7 @@ class Joueur:
     name = ""
     connexion = None
     score = 0
+    tour = False
 
     def __init__(self, name):
         
@@ -142,19 +143,25 @@ class Joueur:
     def set_connexion(self, c):
         self.connexion = c
 
+    def get_tour(self):
+        return self.tour
+
+    def set_tour(self,tour):
+        self.tour = tour
+
     def lancer_tir(self,classplateau,coord):
         plateau = classplateau.plateau
         coordy = coord[0]
         coordx = coord[1]
         if plateau[coordy][coordx] =='~':
-            print('Raté!')
+            return 'Raté!'
         elif plateau[coordy][coordx] =='1':
-            print('Touché!')
+            return 'Touché!'
             plateau[coordy][coordx] ='O'
             bateau = classplateau.detecter_bateau_touche((coordx,coordy))
             classplateau.detecter_bateaux_coule(bateau)
         elif plateau[coordy][coordx] =='O':
-            print('Déja touché..')
+            return 'Déja touché..'
         
         
       
@@ -184,8 +191,8 @@ class Administrateur:
 
     def placer_bateau(self, classplateau,boat):
         plateau = classplateau.plateau
-        coordx= boat.head_coord[1]
-        coordy= boat.head_coord[0]
+        coordx = boat.head_coord[1]
+        coordy = boat.head_coord[0]
         taille = boat.size
         orientation = boat.orientation
         try:
