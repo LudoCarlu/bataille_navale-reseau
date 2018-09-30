@@ -229,6 +229,9 @@ try:
                     code_retour = message[0]
                     data = message[1]
 
+                    if code_retour == "accepter":
+                        print(data)
+
                     if code_retour == "refuser":
                         print(data)
                         envoyer_appel_fonction("deconnexion", "Deconnexion")
@@ -253,16 +256,22 @@ try:
                         to_send = "au_suivant;" + ""
                         queue_des_messages[connexion].put(to_send.encode())
 
+                    if code_retour == "fin_de_partie":
+                        # Score : X, Vous avez gagné ou perdu ou nul
+                        print(data)
+
                     if connexion not in outputs:
                         outputs.append(connexion)
 
                 else:
-                    print("CLIENT CONNEXION READABLE")
+                    """
                     if connexion in outputs:
                         outputs.remove(connexion)
                     inputs.remove(connexion)
                     connexion.close()
                     del queue_des_messages[connexion]
+                    """
+                    exceptional.append(connexion)
 
             for connexion in writable:
                 try:
@@ -283,7 +292,15 @@ try:
 
                 connexion.close()
                 del queue_des_messages[connexion]
+                print("VERBOSE EXCEPTIONNAL")
+                print("inputs", inputs)
+                print("outputs", outputs)
+                print("exceptional", exceptional)
                 exceptional.remove(connexion)
+
+                exceptional.remove(connexion)
+
+
 
 
 
