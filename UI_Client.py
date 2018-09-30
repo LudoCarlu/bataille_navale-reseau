@@ -1,13 +1,15 @@
 from tkinter import *
+from client import *
 
 
 class UI_Client (Frame):
-    def __init__(self, fenetre, initialPlateau, **kwargs):
+    def __init__(self, fenetre, initialPlateau, connexion_avec_serveur,**kwargs):
         LabelFrame.__init__(self, fenetre, text="Interface client",
                             borderwidth=6, **kwargs)
         self.score=0
         self.pseudo ="Test"
         self.initialPlateau=initialPlateau
+        self.connexion_avec_serveur = connexion_avec_serveur
 
         self.pack(side=TOP, padx=1, pady=1, expand="yes", fill=BOTH)
 
@@ -39,6 +41,34 @@ class UI_Client (Frame):
                 b = Button(self.actionLabel,text=self.tableau_plateau[i][j],
                            command=lambda i=i, j=j: self.lancement_tir(i, j),
                            width=3,height=3, fg="Blue").grid(row=i,column=j)
+
+        code_retour=""
+        while connexion_avec_serveur:
+            message_du_serveur_bytes = connexion_avec_serveur.recv(1024)
+            if message_du_serveur_bytes:
+
+                message = message_du_serveur_bytes.decode().split(';')
+                code_retour = message[0]
+                data = message[1]
+                if code_retour == "a_toi":
+                    print(data)
+                    x = input("Coord X : ")
+                    y = input("Coord Y : ")
+                    code = "lancement_tir;"
+                    fct = "j.lancer_tir(plateau, (" + str(x) + "," + str(y) + "))"
+                    to_send = code + fct
+                    connexion_avec_serveur.send(to_send.encode())
+                if code_retour == "pas_toi":
+                    print(data)
+
+                if code_retour == "resultat_tir":
+                    print(data)
+                    to_send = "au_suivant;" + ""
+                    connexion_avec_serveur.send(to_send.encode())
+
+                if code_retour == "fin_de_partie":
+                    # Score : X, Vous avez gagné ou perdu ou nul
+                    print(data)
 
 
     def traitementstringPlateau(self):
