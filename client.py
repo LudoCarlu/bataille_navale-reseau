@@ -179,31 +179,15 @@ try:
 
 
         ## PART 2 GESTION DES CONNEXIONS
-
-        nb_de_joueur = int(input("Combien de joueur voulez vous ? "))
-        envoyer_appel_fonction("nb_de_joueur",str(nb_de_joueur))
+        envoyer_appel_fonction("liste_joueurs_en_attente", "")
         reponse = decode_retour_serveur(connexion_avec_serveur.recv(1024))
         code_retour = reponse[0]
         print(code_retour)
+        list_accept = ui_admin.fenetre_choix_clients(code_retour)
+        time.sleep(1)
+        envoyer_appel_fonction("accepter_joueur_ui", list_accept)
+        time.sleep(1)
 
-
-
-        stop = False
-        i = 0
-        while i < nb_de_joueur and stop is False:
-            envoyer_appel_fonction("liste_joueurs_en_attente", "")
-            reponse = decode_retour_serveur(connexion_avec_serveur.recv(1024))
-            code_retour = reponse[0]
-            print(code_retour)
-            time.sleep(1)
-            idx = str(input("Joueur accepté (Index) ? ou Stop\n"))
-            if idx.lower() is "stop":
-                envoyer_appel_fonction("refuser_joueur", "")
-                stop = True
-            else:
-                envoyer_appel_fonction("accepter_joueur", idx)
-            time.sleep(1)
-            i += 1
 
         envoyer_appel_fonction("refuser_joueur", "") #Vide le tableau des joueurs en attente
         time.sleep(0.5)
