@@ -38,5 +38,5 @@ Une fois les différents joueurs connectés, il est possible de commencer la par
 
 Lors du lancement de la partie, il faut choisir la taille de la table de jeu.
 
-##Jeu
+## Jeu
 
