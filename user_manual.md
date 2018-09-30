@@ -2,7 +2,7 @@
 CARLU Ludovic - FAIVRE Maxime - LE BORGE Kévin
 
 ## Introduction - Prérequis
-On considère que le serveur de jeu et les différents clients sont sur des machines UNIX. Cela implique donc que python est pré-installé. 
+On considère que le serveur de jeu et les différents clients sont sur des machines UNIX. Cela implique donc que python soit pré-installé. 
 
 Il faut également installer des dépendances pour que l'application fonctionne correctement : pandas et tekinter.
 
