@@ -242,7 +242,7 @@ while inputs:
                         # On lance lancer_tir(pla, coord)
                         for j in joueurs:
                             if connexion is j.get_connexion() and j.get_tour() is True:
-                                retour = "resultat_tir;" + eval(message[1])
+                                retour = "resultat_tir;" + eval(message[1])+";"+plateau.afficher_plateau()
                                 queue_des_messages[j.get_connexion()].put(retour.encode())
                                 outputs.append(j.get_connexion())
                                 a_joue = True

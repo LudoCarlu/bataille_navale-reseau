@@ -4,7 +4,7 @@ import select
 import queue
 import UI_Admin as ui_admin
 import UI_Connexion as iu_conn
-import UI_Client as ui_client
+from UI_Client import UI_Client
 from tkinter import messagebox
 import tkinter as tk
 
@@ -232,8 +232,8 @@ try:
 
                     else:
                         fenetre = tk.Tk()
-                        test = ui_client.UI_Client(fenetre,demande_affichage_plateau(), connexion_avec_serveur)
-                        fenetre.mainloop()
+                        test = UI_Client(fenetre,demande_affichage_plateau(), connexion_avec_serveur)
+
 
                 else:
                     """
