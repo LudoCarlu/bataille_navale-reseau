@@ -53,7 +53,7 @@ def fenetre_placement(tailleplateau,ini_plateau,titre="Placement des bateaux"):
 
     label_x = Label(toplevel,text=" position x : "+str(pos_x))
     label_x.grid(row=0,column=0)
-    label_y = Label(toplevel, text=" position x : " + str(pos_y))
+    label_y = Label(toplevel, text=" position Y : " + str(pos_y))
     label_y.grid(row=1, column=0)
 
     def definition_pos(x,y):
@@ -69,7 +69,7 @@ def fenetre_placement(tailleplateau,ini_plateau,titre="Placement des bateaux"):
         for i in range(int(tailleplateau)):
             for j in range(int(tailleplateau)):
                 b = Button(frame_grille, text='-',
-                           command=lambda i=i, j=j: definition_pos(j, i),
+                           command=lambda i=j, j=i: definition_pos(j, i), ####
                            width=2, height=2, fg="Blue").grid(row=i, column=j + 1)
     else:
         mon_plateau = ini_plateau[:-1].split("\n")
@@ -87,7 +87,7 @@ def fenetre_placement(tailleplateau,ini_plateau,titre="Placement des bateaux"):
                 elif mon_plateau[i][j] == """B""":
                     couleur = 'Grey'
                 b = Button(frame_grille,text=mon_plateau[i][j],
-                           command=lambda i=j, j=i: definition_pos(j, i),
+                           command=lambda i=j, j=i: definition_pos(j, i), #####
                            width=2,height=2, fg=couleur).grid(row=i,column=j+1)
 
     def OK_list():

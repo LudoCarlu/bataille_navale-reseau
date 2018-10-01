@@ -237,7 +237,7 @@ class Joueur:
                 return 'Coulé !'
             else:
                 return 'Touché !'
-        elif plateau[coordy][coordx] == 'T':
+        elif plateau[coordx][coordy] == 'T' or plateau[coordx][coordy] == 'C':
             return 'Déja touché..'
 
 
