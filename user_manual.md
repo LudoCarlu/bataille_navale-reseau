@@ -28,36 +28,35 @@ Il faut maintenant lancer le premier client admin
 
 `python3 client.py` 
 
-Sur ce client on se connecte en admin avec les crédentials contenus dans le fichier : *users.csv*
-Soit :
+Sur ce client on se connecte en admin avec les crédentials contenus dans le fichier : *users.csv*, soit :
     
     login : admin
     password : admin
 
 
 A partir de ce moment, l'administrateur peut choisir la taille de la grille pour la bataille navale.
-Dès lors qu'il a choisit la taille de la grille, les différents joueurs peuvent se connecter grâce au lancement de plusieurs interfaces client.
+Dès lors qu'il a choisi la taille de la grille, les différents joueurs peuvent se connecter grâce au lancement de plusieurs interfaces client.
 
 `python3 client.py` 
 
-Les différents login des clients se trouvent aussi dans le fichier *users.csv*
+Les différents logins des clients se trouvent aussi dans le fichier *users.csv*
 
-Une fois les différents joueurs connectés, l'administrateur doit placer ces bateaux. 
+Une fois les différents joueurs connectés, l'administrateur doit placer ses bateaux. 
 
 1. Il sélectionne une case en cliquant dessus, cela positionne la tête du bateau
 2. Il sélectionne une orientation (horizontal/vertical)
 3. Puis une taille (petit, moyen ou grand)
 
-Nous avons fixé le nombre maximum de bateau à 3.
+Nous avons fixé le nombre maximum de bateaux à 3.
 
-Dès lors que l'administrateur à placer tous ces bateaux, une interface graphique apparait pour proposer à l'administrateur d'accepter les différents joueurs sur sa partie.
+Dès lors que l'administrateur à placer tous ses bateaux, une interface graphique apparait pour proposer à l'administrateur d'accepter les différents joueurs sur sa partie.
 
 
 ## Jeu
 
 La partie commence et le serveur invite le premier joueur à lancer un tir.
 
-Les joueurs lance un tir à tour de rôle et le serveur leur renvoie l'état de leur tir et le nouveau plateau de jeux.
+Les joueurs lance un tir à tour de rôle et le serveur leur renvoie l'état de leur tir et le nouveau plateau de jeu.
 
 L'affichage se décompose en 3 caractères :
 
@@ -65,6 +64,6 @@ L'affichage se décompose en 3 caractères :
 - "T" représente une case touchée
 - "C" représente un bateau coulé
 
-Une casé touché est égale à 1 point et un bateau coulé à 3 points.
+Une casé touchée est égale à 1 point et un bateau coulé à 3 points.
 
-Le jeu se termine lorsque que tous les bateaux ont été coulés.
+Le jeu se termine lorsque que tous les bateaux ont coulé.
