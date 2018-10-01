@@ -11,6 +11,7 @@ import select
 import queue
 import pandas as pd
 import Game as game
+import time
 
 hote = ''
 global port
@@ -75,8 +76,9 @@ connexion_du_serveur = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 connexion_du_serveur.setblocking(0)
 connexion_du_serveur.bind((hote, port))
 print("socket is binded to %s" % (port))
-connexion_du_serveur.listen(15)  # Serveur écoute jusqu'à 3 connexions
+connexion_du_serveur.listen(15)  # Serveur écoute jusqu'à 15 connexions
 print("socket is listening")
+print()
 
 # inputs = liste de toutes les connexions
 inputs = [connexion_du_serveur]
@@ -97,6 +99,7 @@ while inputs:
             connexion_avec_client, adresse_du_client = connexion.accept()
             connexion.setblocking(0)
             print("Connexion de %s : %s" % (adresse_du_client[0], adresse_du_client[1]))
+            print()
 
             inputs.append(connexion_avec_client)
             # On crée une liste pour les messages de ce client
@@ -112,6 +115,7 @@ while inputs:
 
                 print(adresse_du_client[0], ":", adresse_du_client[1])
                 print("Code :", message[0], "\nRequest :", message[1],'\n')
+                print()
 
                 try:
 
@@ -130,23 +134,23 @@ while inputs:
 
                     if message[0] == "initialisation":
                         plateau = eval(message[1])  # Initialisation du plateau
-                        print(plateau)
                         queue_des_messages[connexion].put(code_retour_au_client["initialisation"].encode())
 
                     if message[0] == "demande_affichage_plateau":
                         retour = ""
                         if plateau is not None:
                             retour = plateau.afficher_plateau()
-                            print(retour)
 
                         queue_des_messages[connexion].put(retour.encode())
 
                     if message[0] == "creation_bateau":
                         try:
-                            print("message 1 " + message[1])
-                            eval(message[1])
+                            est_place = eval(message[1])
                             retour = plateau.afficher_plateau()
-                            print(retour)
+
+                            if est_place is False:
+                                retour = retour + ";" + "placement_impossible"
+
                         except Exception as e:
                             retour = 'Erreur ! Placement impossible'
                         queue_des_messages[connexion].put(retour.encode())
@@ -173,17 +177,15 @@ while inputs:
                     if message[0] == "accepter_joueur_ui":
                         idx_joueurs_acceptés = message[1].split(",")
 
-                        print("IDS" + str(idx_joueurs_acceptés))
-                        print(str(joueurs_en_attente))
-
                         for j in joueurs_en_attente:
 
                             if str(joueurs_en_attente.index(j)) in idx_joueurs_acceptés:
-                                print("attente id" + str(joueurs_en_attente.index(j)))
                                 joueurs.append(j)
                                 to_send = "accepter;Vous avez été selectionné par l'administrateur\nA vous de jouer " + j.get_name() + "!"
                                 queue_des_messages[j.get_connexion()].put(to_send.encode())
                                 outputs.append(j.get_connexion())
+
+                        time.sleep(0.3)
 
                         for j in joueurs_en_attente:
                             if j not in joueurs:
@@ -193,43 +195,38 @@ while inputs:
                                 outputs.append(j.get_connexion())
                             else:
                                 joueurs_en_attente.remove(j)
-                    """
+
                     if message[0] == "accepter_joueur":
                         idx = int(message[1])
                         j = joueurs_en_attente[idx]
                         joueurs.append(j)
-                        # print("joueurs : " + str(joueurs))
                         to_send = "accepter;Vous avez été selectionné par l'administrateur\nA vous de jouer "+j.get_name()+"!"
                         queue_des_messages[j.get_connexion()].put(to_send.encode())
                         joueurs_en_attente.remove(j)
                         outputs.append(j.get_connexion())
 
                     if message[0] == "refuser_joueur":
-                        print("len ",len(joueurs_en_attente))
                         if len(joueurs_en_attente) > 0:
                             for j in joueurs_en_attente:
-                                # print("Refus " + str(j.get_connexion().getsockname()))
                                 to_send = "refuser;Vous n'avez pas été selectionné par l'administrateur"
                                 queue_des_messages[j.get_connexion()].put(to_send.encode())
                                 joueurs_en_attente.remove(j)
                                 outputs.append(j.get_connexion())
                                 #La demande de deconnexion se fait ensuite côté client
-                    """
+
                     # Envoyer par l'admin
                     if message[0] == "debut_partie":
-                        # Pour les tests
-                        adm.placer_bateau(plateau, game.Bateau('grand', 'horizontal', (1,1)))
-                        adm.placer_bateau(plateau, game.Bateau('moyen', 'verticale', (1, 4)))
 
                         # On donne le tour au premier arrivée
                         joueur1 = joueurs[0]
                         joueur1.set_tour(True)
                         index_joueur_qui_joue = 0
 
-                        to_send = code_retour_au_client["a_toi"]
+                        to_send = code_retour_au_client["a_toi"]+";"+plateau.afficher_plateau_client()
                         queue_des_messages[joueur1.get_connexion()].put(to_send.encode())
                         outputs.append(joueur1.get_connexion())
 
+                        time.sleep(1)
                         to_send = code_retour_au_client["pas_toi"]
                         for j in joueurs:
                             if j is not joueur1:
@@ -242,14 +239,35 @@ while inputs:
                         # On lance lancer_tir(pla, coord)
                         for j in joueurs:
                             if connexion is j.get_connexion() and j.get_tour() is True:
-                                retour = "resultat_tir;" + eval(message[1])+";"+plateau.afficher_plateau()
+                                result = eval(message[1])
+                                retour = "resultat_tir;" + result +";"+plateau.afficher_plateau_client()
+
+                                if result == 'Touché !':
+                                    j.add_point(1)
+                                if result == 'Coulé !':
+                                    j.add_point(3)
+
                                 queue_des_messages[j.get_connexion()].put(retour.encode())
                                 outputs.append(j.get_connexion())
-                                a_joue = True
 
                             else:
                                 retour = code_retour_au_client["pas_toi"]
                                 queue_des_messages[j.get_connexion()].put(retour.encode())
+                                outputs.append(j.get_connexion())
+
+                        if plateau.is_partie_finie():
+                            code = "fin_partie"
+                            message_for_admin = "La partie est terminé"
+                            to_send = code + ";" + message_for_admin
+
+                            #Envoie message à l'admin
+                            queue_des_messages[adm.get_connexion()].put(to_send.encode())
+                            outputs.append(adm.get_connexion())
+
+                            for j in joueurs:
+                                message_for_joueur = "La partie est terminé\nVotre score est : " + str(j.get_score())
+                                to_send = code + ";" + message_for_joueur
+                                queue_des_messages[j.get_connexion()].put(to_send.encode())
                                 outputs.append(j.get_connexion())
 
                     # Renvoyer par le client qui vient d'avoir le résultat de son tir
@@ -271,7 +289,7 @@ while inputs:
                                     break
 
                         joueurs[index_joueur_qui_joue].set_tour(True)
-                        to_send = code_retour_au_client["a_toi"]
+                        to_send = code_retour_au_client["a_toi"]+";"+plateau.afficher_plateau_client()
                         queue_des_messages[joueurs[index_joueur_qui_joue].get_connexion()].put(to_send.encode())
                         outputs.append(joueurs[index_joueur_qui_joue].get_connexion())
 
@@ -296,13 +314,18 @@ while inputs:
 
         try:
             message_suivant = queue_des_messages[connexion].get_nowait()
+            print("Envoi serveur vers : " + str(connexion.getpeername()))
             print("Message suivant : " + str(message_suivant))
+            print()
+            time.sleep(0.3)
 
         except queue.Empty:
             outputs.remove(connexion)
 
         else:
             connexion.send(message_suivant)
+
+    # Section des erreurs
 
     for connexion in exceptional:
         inputs.remove(connexion)
