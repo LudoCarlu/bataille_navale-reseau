@@ -257,7 +257,7 @@ while inputs:
 
                         if plateau.is_partie_finie():
                             code = "fin_partie"
-                            message_for_admin = "La partie est terminé"
+                            message_for_admin = "La partie est terminée"
                             to_send = code + ";" + message_for_admin
 
                             #Envoie message à l'admin
@@ -265,7 +265,7 @@ while inputs:
                             outputs.append(adm.get_connexion())
 
                             for j in joueurs:
-                                message_for_joueur = "La partie est terminé\nVotre score est : " + str(j.get_score())
+                                message_for_joueur = "La partie est terminée\nVotre score est : " + str(j.get_score())
                                 to_send = code + ";" + message_for_joueur
                                 queue_des_messages[j.get_connexion()].put(to_send.encode())
                                 outputs.append(j.get_connexion())
